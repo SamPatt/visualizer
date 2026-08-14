@@ -34,12 +34,25 @@ call graph dumped from a static analyser, it is arranged and annotated to be
 
 ## Status
 
-Nothing is built. This repository currently holds the design intent, the visual
-specification derived from the reference, and the open questions in
-`docs/decisions.md` that need answering before code is worth writing.
+A first version is built, for Python, and it draws this repository.
+
+    python -m visualizer .                     structure only, no run
+    python -m visualizer . --trace-self        record this tool reading a repo
+    python -m visualizer . --trace script.py   record any run
+
+The output is one self-contained HTML file — no runtime, nothing fetched.
+
+Of the questions in `docs/decisions.md`, two were settled as *both*: structure
+always comes from static analysis, and a recording overlays true call counts
+and an exact hop sequence when one is available; grouping comes from a
+checked-in manifest, falling back to the package layout on a repository that
+has none. The rest follow the recommendations already written there.
 
 ## Layout
 
+    visualizer/          the tool
+    visualizer.toml      the manifest for this repository
+    tests/               run with: python -m unittest discover tests
     docs/aesthetic.md    the visual language, measured from the reference
-    docs/decisions.md    what has to be decided before building
+    docs/decisions.md    what had to be decided before building
     docs/reference/      the source image

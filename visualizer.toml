@@ -1,0 +1,335 @@
+# The manifest for this repository, read by the tool in this repository.
+#
+# Everything here is judgement a parser cannot supply: what the parts mean,
+# what to call them, which ones belong together, and where they sit on the
+# plane. The analyser supplies the numbers; this file supplies the words.
+
+[project]
+name = "visualizer"
+variant = "python · svg"
+eyebrow = "VISUALIZER"
+title = "The Isometric Reader"
+subtitle = "how a repository becomes a map you can walk through"
+
+# ---------------------------------------------------------------------------
+# the parts
+# ---------------------------------------------------------------------------
+
+[[groups]]
+title = "THE WAY IN"
+
+[[groups]]
+title = "READING THE CODE"
+
+[[groups]]
+title = "DECIDING MEANING"
+
+[[groups]]
+title = "ON THE PLANE"
+
+[[groups]]
+title = "WHAT COMES OUT"
+
+[[nodes]]
+id = "visualizer/__main__.py"
+key = "X"
+name = "ENTRY POINT"
+group = "THE WAY IN"
+pos = [0, 0]
+size = [3, 3]
+what = "Two lines, so that `python -m visualizer` reaches the same place the console script does."
+built = "Imports main and raises SystemExit with its return code."
+
+[[nodes]]
+id = "visualizer/cli.py"
+key = "C"
+name = "THE COMMAND LINE"
+group = "THE WAY IN"
+pos = [0, 9]
+what = """
+The only part that touches the disk on purpose. It decides whether this run is \
+[[recorded]] or merely read, hands the rest of the program a repository path, \
+and writes the finished page out.
+"""
+built = "argparse, then compose() and page.build(). --trace-self records the tool reading the repository and then draws that run."
+
+[[nodes]]
+id = "visualizer/analyze.py"
+key = "A"
+name = "THE STATIC READER"
+group = "READING THE CODE"
+pos = [10, 1]
+what = """
+Parses every module without running any of it, and reports what is there: \
+modules, their top-level definitions, how long they are, and every place one \
+calls another. It is honest about its limit — a static edge means [[there is a \
+call site here]], not that the call happens.
+"""
+built = "ast.NodeVisitor per module, plus a dotted-name table so relative imports resolve to files rather than to the package."
+
+[[nodes]]
+id = "visualizer/tracing.py"
+key = "T"
+name = "THE RECORDER"
+group = "READING THE CODE"
+pos = [10, 16]
+what = """
+Runs the code for real under sys.setprofile and keeps only the calls that land \
+inside the repository. What it produces is true by construction: block height \
+becomes how often something was entered, and TRACE ONE STEP walks hops that \
+[[actually happened]], in the order they happened.
+"""
+built = "A profile hook keeping a module stack; consecutive repeats are collapsed so the flow walks the shape rather than the churn."
+
+[[nodes]]
+id = "visualizer/manifest.py"
+key = "M"
+name = "THE COMPOSER"
+group = "DECIDING MEANING"
+pos = [21, 8]
+what = """
+Folds the reading, the recording and this file into the one structure the \
+renderer understands. When no manifest exists it stands in for one using the \
+package layout — and says so on the page, because that map is the one you \
+could already have drawn from `tree`.
+"""
+built = "Reads TOML with tomllib. Everything downstream sees a Scene and cannot tell which parts were measured and which were written by hand."
+
+[[nodes]]
+id = "visualizer/model.py"
+key = "D"
+name = "THE SHARED WORDS"
+group = "DECIDING MEANING"
+pos = [21, 21]
+kind = "plates"
+what = """
+The vocabulary every other part agrees on: a node, an edge, a group, a stat, a \
+section, and the scene that holds them. A collection of many like things, so \
+it is drawn as [[stacked plates]] rather than one solid block.
+"""
+built = "Plain dataclasses, no behaviour. The one rule is that nothing downstream may ask where a number came from."
+
+[[nodes]]
+id = "visualizer/layout.py"
+key = "L"
+name = "PLACEMENT"
+group = "ON THE PLANE"
+pos = [31, 1]
+what = """
+Puts the blocks somewhere and routes the lines between them. It gets it \
+roughly right and then gets out of the way: a layered layout will never find \
+the legible arrangement a person draws, so any position written in the \
+manifest is [[left alone]].
+"""
+built = "Longest-path layering for anything unplaced; edges elbow the less crowded of two orthogonal routes and are trimmed back to the footprint they leave."
+
+[[nodes]]
+id = "visualizer/iso.py"
+key = "I"
+name = "THE PROJECTION"
+group = "ON THE PLANE"
+pos = [31, 16]
+what = """
+True isometric, and the geometry of one extruded rectangle. Three faces can \
+ever face this camera, and knowing which is what lets the renderer hatch them \
+along opposite axes so a block reads as solid.
+"""
+built = "Two trigonometric constants and a Box that yields its top, its two visible faces, its silhouette and its depth key."
+
+[[nodes]]
+id = "visualizer/render.py"
+key = "R"
+name = "DRAWING THE PLANE"
+group = "WHAT COMES OUT"
+pos = [42, 8]
+what = """
+Line art, single weight, two colours. Everything on the plane is sorted by how \
+near the viewer it is and drawn back to front, with edge segments a hair \
+behind blocks so a line runs [[under]] a block rather than across its face.
+"""
+built = "Emits SVG fragments with a depth key, sorts, and joins. The only texture in the system is a hatch pattern, in three directions."
+
+[[nodes]]
+id = "visualizer/page.py"
+key = "G"
+name = "THE PAGE"
+group = "WHAT COMES OUT"
+pos = [42, 20]
+what = """
+Wraps the plane in the rest of the instrument: the counted facts along the \
+top, the keyed index down the side, this panel, and the line at the bottom \
+that spells out every interaction rather than hiding any of them behind \
+discovery.
+"""
+built = "One HTML string with the CSS and the script inlined. Nothing is fetched at runtime, so the output is a single file you can commit or attach."
+
+[[nodes]]
+id = "visualizer/__init__.py"
+key = "Z"
+name = "THE PACKAGE"
+group = "WHAT COMES OUT"
+pos = [52, 13]
+size = [3, 3]
+what = "The pipeline written down in one docstring, so the order is stated in the code and not only in the diagram."
+built = "Names the stages and nothing else."
+
+# ---------------------------------------------------------------------------
+# the edges
+#
+# Solid is a call path that this run went down. Dashed is the recorded-run
+# path: present, but not switched on unless you pass --trace.
+# ---------------------------------------------------------------------------
+
+[[edges]]
+from = "visualizer/__main__.py"
+to = "visualizer/cli.py"
+
+[[edges]]
+from = "visualizer/cli.py"
+to = "visualizer/analyze.py"
+
+[[edges]]
+from = "visualizer/cli.py"
+to = "visualizer/tracing.py"
+kind = "optional"
+
+[[edges]]
+from = "visualizer/cli.py"
+to = "visualizer/manifest.py"
+
+[[edges]]
+from = "visualizer/manifest.py"
+to = "visualizer/analyze.py"
+
+[[edges]]
+from = "visualizer/manifest.py"
+to = "visualizer/tracing.py"
+kind = "optional"
+
+[[edges]]
+from = "visualizer/manifest.py"
+to = "visualizer/model.py"
+weight = 18
+
+[[edges]]
+from = "visualizer/cli.py"
+to = "visualizer/render.py"
+
+[[edges]]
+from = "visualizer/render.py"
+to = "visualizer/layout.py"
+
+[[edges]]
+from = "visualizer/render.py"
+to = "visualizer/iso.py"
+weight = 22
+
+[[edges]]
+from = "visualizer/layout.py"
+to = "visualizer/model.py"
+
+[[edges]]
+from = "visualizer/render.py"
+to = "visualizer/model.py"
+
+[[edges]]
+from = "visualizer/cli.py"
+to = "visualizer/page.py"
+
+[[edges]]
+from = "visualizer/page.py"
+to = "visualizer/render.py"
+
+[[edges]]
+from = "visualizer/page.py"
+to = "visualizer/model.py"
+
+[[edges]]
+from = "visualizer/cli.py"
+to = "visualizer/__init__.py"
+
+# ---------------------------------------------------------------------------
+# the words
+# ---------------------------------------------------------------------------
+
+[[what]]
+heading = "WHAT THIS IS"
+body = """
+This repository is a tool that reads a codebase and draws it as an isometric \
+map, with execution flowing along the edges. It is pointed at itself here, so \
+the map on the left is [[the program that drew it]].
+
+The shape is a line rather than a loop, because the system is one: read the \
+source, decide what it means, put it on the plane, draw it, write one file. \
+Nothing flows backwards.
+"""
+
+[[what]]
+heading = "HOW TO READ IT"
+body = """
+A block is a module. Its [[height]] is how hard that module works — how often \
+it was entered in the recorded run, or how long it is when no run was \
+recorded. Its [[footprint]] is how many things it defines. Both are named in \
+the bar along the top, so neither has to be guessed at.
+
+Solid lines are call paths. [[Dashed]] lines are the recorded-run path: it \
+exists, but it is not switched on unless the tool is asked for it. The \
+recorder is the one module that cannot appear in its own recording.
+
+Hover anything for a plain description. The [[How it's built]] tab gives the \
+implementation instead. Press → to go inside a block and see its own \
+definitions as a map one level down.
+"""
+
+[[what]]
+heading = "WHAT IS NOT TRUE YET"
+body = """
+Only Python is read. Call resolution stops at the module boundary — going \
+inside a block shows its definitions and the calls between them by name, which \
+is a weaker claim than the module-level edges. And the arrangement on the \
+plane was typed into a manifest by a person; the automatic layout is only used \
+for whatever the manifest does not place.
+"""
+
+[[built]]
+heading = "THE PIPELINE"
+body = """
+Six stages, each knowing only the one before it. [[analyze]] reads the source \
+without running it. [[tracing]] optionally records a real run over the same \
+source. [[manifest]] folds both into a Scene, guided by checked-in judgement. \
+[[layout]] places the blocks and routes the edges. [[render]] draws the plane \
+as line art. [[page]] wraps it in one self-contained HTML file.
+"""
+
+[[built]]
+heading = "THE TWO READERS"
+body = """
+Static analysis says what could be called; a recording says what did. They \
+disagree in both directions, and the honest thing is to run both and mark \
+which is which. The static reader gives structure for any repository, \
+including ones that cannot be run. The recorder gives an exact hop sequence, \
+which is the only thing that makes TRACE ONE STEP mean something.
+
+Neither is authoritative on its own, so neither is presented as if it were.
+"""
+
+[[built]]
+heading = "WHAT THE MANIFEST CARRIES"
+body = """
+Grouping, keys, plain-language descriptions, and any position that matters. \
+None of it can come out of a parser: the groups down the left are meanings, \
+not directories, and this panel is written explanation with judgement in it.
+
+The manifest is the artifact. A model can draft it, a person corrects it, and \
+it stays checked in — which is what keeps the output stable between runs.
+"""
+
+[[built]]
+heading = "WHERE IT IS WEAK"
+body = """
+Edges are routed with two candidate elbows and the less crowded one wins; \
+anything more tangled than this map would need a real orthogonal router. \
+Depth sorting assumes footprints do not overlap. And a map with several \
+hundred blocks on it has already failed at its job, so nothing here is built \
+to scale past a few dozen.
+"""

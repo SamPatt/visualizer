@@ -11,12 +11,22 @@ below it was sampled from that image.
 That is the entire palette. There is no third colour, no accent hue, no shadow
 tint. The ground is used identically for the canvas, the top bar, the prose
 panel and the sidebar — the panels are separated by hairlines, not by fills.
-The sidebar alone is a barely-there step darker (`#C8C197`), which reads as a
-seam rather than a panel.
+
+> **Corrected against the image.** This section previously also claimed the
+> sidebar was a step darker at `#C8C197`. Sampling the reference gives the
+> sidebar `#CDC499` — exactly the ground, like everything else. The lighter
+> pixels that suggested a seam are JPEG ringing beside the hairline boxes
+> around each entry. The implementation uses plain ground.
 
 **Ink covers 4.1% of the pixels.** That restraint is doing most of the work. Any
 change that raises the ink share — heavier strokes, filled shapes, more labels —
 moves it away from the reference faster than a wrong colour would.
+
+Measured the same way on both images (pixels below 140 luma), the reference is
+6.2% of the whole page and 3.4% of the canvas region alone; the generated page
+on this repository is 4.4% and 1.3%. It sits *under* the reference, which is
+the safe side of the line — this map has eleven blocks where the reference
+mock-up has twenty.
 
 Emphasis is achieved by *inversion*, never by colour: an inline highlight is a
 black chip with sand text sitting in the run of prose.
@@ -32,11 +42,20 @@ prose panel.
 
 True isometric, drawn as line art. Blocks are extruded rectangles:
 
-- **Top faces** are empty ground — no fill.
-- **Side faces** carry fine diagonal hatching. This is the only texture in the
-  system and it is what makes the blocks read as solid.
+- **All three visible faces are hatched**, each along a different direction.
+  The top face carries fine *vertical* lines; the two side faces carry
+  diagonals at ±30°, matching the isometric axis of the *opposite* face, so
+  they meet as a chevron at the front vertical edge where the two sides join.
+  This is the only texture in the system and it is what makes a block read as
+  solid.
 - **Edges** are single-weight black lines. No outline hierarchy, no thick/thin
   distinction between silhouette and interior.
+
+> **Corrected against the image.** This section previously said top faces were
+> empty ground with no fill. Zooming the reference shows vertical hatching on
+> every top face, and the hatch angles on the sides measure 30.0° and −31.0°
+> against 29.5° and −30.0° in the implementation. Faces are filled with the
+> ground colour before hatching, so a block occludes whatever is behind it.
 
 A faint grid sits on the ground plane, visible only where nothing covers it.
 
@@ -45,6 +64,15 @@ A faint grid sits on the ground plane, visible only where nothing covers it.
 From the reference's own prose: *"The tall structures are the measuring parts."*
 Extrusion height is a data channel, not decoration. Whatever it maps to must be
 stated in the panel, or the reader will invent a meaning for it.
+
+As built, there are two channels and the top bar names both:
+
+    height      calls recorded in the traced run, or lines of code without one
+    footprint   how many things the module defines
+
+Height is square-rooted and then capped at 1.25× the block's own footprint —
+past that a block stops reading as a taller thing and starts reading as a
+different kind of thing.
 
 Two block variants appear:
 

@@ -1,0 +1,19 @@
+node_modules/
+dist/
+build/
+out/
+
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+*.egg-info/
+
+.DS_Store
+*.log
+.env
+.env.*
+!.env.example
+
+# generated maps
+*.map.html
